@@ -9,7 +9,7 @@
       --main-purple: #6C5CE7;
       --sub-purple: #F0EDFF;
       --sub-yellow: #FFC72C;
-      --soft-mint: #E6F8F3;
+      --soft-mint: #E6F8F3; /* 연한 민트색 변수 */
       --card-border: #1A1A1A;
     }
 
@@ -60,9 +60,10 @@
       padding-bottom: 16px;
     }
 
-    .cover-start--btn {
+    /* 시작하기 버튼 이미지 크기 확장 */
+    .cover-start-img-btn {
       width: 100%;
-      max-width: 380px;
+      max-width: 380px; /* 기존 300px -> 380px로 변경하여 크게 확대 */
       cursor: pointer;
       transition: transform 0.1s ease;
       display: block;
@@ -84,7 +85,7 @@
     }
 
     .progress-bar {
-      width: 90%; /* 박스 크기들과 통일감 부여 */
+      width: 90%;
       height: 8px;
       background: rgba(233, 239, 247, 0.9);
       border-radius: 4px;
@@ -99,13 +100,13 @@
       transition: width 0.3s ease;
     }
 
-    /* 질문 박스: 가로 폭 90%로 축소 및 중앙 정렬 */
+    /* 질문 박스: 연한 민트색(#E6F8F3) 적용 */
     .question-title {
       width: 90%;
       font-size: 16px;
       font-weight: 800;
       color: #1A1A1A;
-      background-color: var(--soft-mint);
+      background-color: var(--soft-mint); /* 연한 민트색 배경 설정 */
       margin-bottom: 16px;
       line-height: 1.4;
       word-break: keep-all;
@@ -125,7 +126,7 @@
       width: 100%;
     }
 
-    /* 선택지 박스: 가로 폭 90%로 질문 박스와 완전히 동일하게 적용 */
+    /* 선택지 박스: 흰색 계열 유지 */
     .option-btn {
       width: 90%;
       background: rgba(255, 255, 255, 0.95);
@@ -291,7 +292,7 @@
   <!-- 1. 표지 페이지 -->
   <div id="cover-page" class="page active">
     <div class="cover-container">
-      < src="음악 취향 테스트.png" alt="시작하기" class="cover-start--btn" onclick="startTest()">
+      <img src="https://postfiles.pstatic.net/MjAyNjA5MDhfMjcx/MDAxNzg4ODM5ODc0MTA5.vRE1H16O26u6z5TVh6JWvhxDbo6YXSOeA6HOoJWpTpwg.fgXzI4QQa5_mobQN2lNwjlGNgUFBuccY-i78vpBhN0Ug.PNG/%EB%B2%84%ED%8A%BC.png?type=w773" alt="시작하기" class="cover-start-img-btn" onclick="startTest()">
     </div>
   </div>
 
