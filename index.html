@@ -329,6 +329,7 @@
 <script>
   const bgCover = "mainpage.png";
   const bgSub = "page.png";
+  const bgLast = "lastpage.png"; // 결과 페이지 배경 이미지 추가
 
   const questions = [
     {
@@ -467,8 +468,10 @@
 
     if (pageId === 'cover-page') {
       container.style.backgroundImage = `url('${bgCover}')`;
+    } else if (pageId === 'result-page') {
+      container.style.backgroundImage = `url('${bgLast}')`; // 결과 페이지에 lastpage.png 적용
     } else {
-      container.style.backgroundImage = `url('${bgSub}')`;
+      container.style.backgroundImage = `url('${bgSub}')`;   // 질문 페이지에 page.png 적용
     }
   }
 
