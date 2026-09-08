@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>음악 취향 테스트</title>
+  <style>
+    :root {
+      --main-purple: #6C5CE7;
+      --sub-purple: #F0EDFF;
+      --sub-yellow: #FFC72C;
+      --soft-mint: #E6F8F3;
+      --card-border: #1A1A1A;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    
+    body { 
+      background-color: #E2E0F8; 
+      color: #1A1A1A; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* 화면 비율: 1080px * 1920px (종횡비 9:16) 맞춤 조정 */
+    .container {
+      width: 100%;
+      max-width: 450px;
+      height: 100vh;
+      max-height: 800px;
+      aspect-ratio: 9 / 16;
+      background-color: #ffffff;
+      padding: 24px 20px;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+
+    /* 페이지 화면 제어 */
+    .page { display: none; flex-direction: column; flex-grow: 1; height: 100%; justify-content: space-between; }
+    .page.active { display: flex; animation: fadeIn 0.3s ease; }
+
+    /* ================= 1. 표지 페이지 ================= */
+    .cover-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      width: 100%;
+      padding-bottom: 16px;
+    }
+
+    .cover-start-img-btn {
+      width: 100%;
+      max-width: 380px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      display: block;
+      margin: 0 auto;
+    }
+    .cover-start-img-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* ================= 2. 질문 페이지 ================= */
+    .question-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+    .progress-bar {
+      width: 90%; /* 박스 크기들과 통일감 부여 */
+      height: 8px;
+      background: rgba(233, 239, 247, 0.9);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      border: 1.5px solid var(--card-border);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--main-purple);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* 질문 박스: 가로 폭 90%로 축소 및 중앙 정렬 */
+    .question-title {
+      width: 90%;
+      font-size: 16px;
+      font-weight: 800;
+      color: #1A1A1A;
+      background-color: var(--soft-mint);
+      margin-bottom: 16px;
+      line-height: 1.4;
+      word-break: keep-all;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--card-border);
+      box-shadow: 2px 2px 0px var(--card-border);
+      text-align: center;
+    }
+
+    /* 선택지 박스 컨테이너 */
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* 선택지 박스: 가로 폭 90%로 질문 박스와 완전히 동일하게 적용 */
+    .option-btn {
+      width: 90%;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 13px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 13.5px;
+      line-height: 1.35;
+      color: #333;
+      font-weight: 600;
+      word-break: keep-all;
+      box-shadow: 2px 2px 0px var(--card-border);
+    }
+    .option-btn:hover, .option-btn:active {
+      background: var(--sub-purple);
+      color: var(--main-purple);
+    }
+
+    /* ================= 3. 결과 페이지 ================= */
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: center;
+      gap: 12px;
+      height: 100%;
+      padding: 10px 0;
+      overflow-y: auto;
+    }
+
+    /* 결과 문구 박스 */
+    .result-header {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 14px 12px;
+      border-radius: 14px;
+      border: 2px solid var(--card-border);
+      box-shadow: 3px 3px 0px var(--card-border);
+      margin-bottom: 4px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .result-tag {
+      display: inline-block;
+      background: var(--sub-yellow);
+      color: #333;
+      font-size: 11.5px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 14px;
+      margin-bottom: 6px;
+      border: 1.5px solid var(--card-border);
+    }
+    .result-type-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--main-purple);
+      margin-bottom: 4px;
+    }
+    .result-desc {
+      font-size: 12.5px;
+      color: #444;
+      line-height: 1.4;
+      word-break: keep-all;
+    }
+
+    /* 노래 추천 리스트 */
+    .song-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .song-item {
+      width: 90%;
+      margin: 0 auto;
+      background: rgba(255, 253, 245, 0.95);
+      border: 2px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 2px 2px 0px var(--card-border);
+    }
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .song-title { font-size: 13px; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song-artist { font-size: 11.5px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .listen-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #FF0000;
+      color: white;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 5px 8px;
+      border-radius: 14px;
+      white-space: nowrap;
+      border: 1px solid var(--card-border);
+      flex-shrink: 0;
+    }
+
+    /* 하단 버튼 그룹 */
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .primary-btn {
+      background: var(--main-purple);
+      color: white;
+      border: 2px solid var(--card-border);
+      border-radius: 24px;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 90%;
+      text-align: center;
+      box-shadow: 2px 2px 0px var(--card-border);
+    }
+
+    .share-btn {
+      background: #ffffff;
+      border: 2px solid var(--card-border);
+      color: var(--card-border);
+      font-size: 13.5px;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 24px;
+      cursor: pointer;
+      width: 90%;
+      box-shadow: 2px 2px 0px var(--card-border);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+  <!-- 1. 표지 페이지 -->
+  <div id="cover-page" class="page active">
+    <div class="cover-container">
+      <img src="https://postfiles.pstatic.net/MjAyNjA5MDhfMjcx/MDAxNzg4ODM5ODc0MTA5.vRE1H16O26u6z5TVh6JWvhxDbo6YXSOeA6HOoJWpTpwg.fgXzI4QQa5_mobQN2lNwjlGNgUFBuccY-i78vpBhN0Ug.PNG/%EB%B2%84%ED%8A%BC.png?type=w773" alt="시작하기" class="cover-start-img-btn" onclick="startTest()">
+    </div>
+  </div>
+
+  <!-- 2. 질문 페이지 -->
+  <div id="question-page" class="page">
+    <div class="question-content">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="question-title" id="questionTitle">질문 내용</div>
+      <div class="options-container" id="optionsContainer"></div>
+    </div>
+  </div>
+
+  <!-- 3. 결과 페이지 -->
+  <div id="result-page" class="page">
+    <div class="result-content">
+      <div class="result-header">
+        <div class="result-tag">당신만을 위한 추천 발라드</div>
+        <div class="result-type-title" id="resultTypeTitle">결과 유형명</div>
+        <div class="result-desc" id="resultDesc">유형 설명 내용</div>
+      </div>
+
+      <div class="song-list" id="songList"></div>
+
+      <div class="button-group">
+        <button class="share-btn" onclick="copyURL()">🔗 친구에게 공유하기</button>
+        <button class="primary-btn" onclick="restartTest()">🔄 다시 테스트하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const bgCover = "https://postfiles.pstatic.net/MjAyNjA5MDhfMjg5/MDAxNzg4ODM5ODc0MTY1.mHRRS_R1IFYLLXmhcXmjp08wm4mrp03K0Vm8vLOH5O8g.Efj9WQQbU8u4_BUbWUb5VPIzOS1NmUzsIpN3c6f6i98g.PNG/%EC%9D%8C%EC%95%85_%EC%B7%A8%ED%96%A5_%ED%85%8C%EC%8A%A4%ED%8A%B8.png?type=w773";
+  const bgSub = "https://postfiles.pstatic.net/MjAyNjA5MDhfMyAg/MDAxNzg4ODM5ODc0MTY0.YG5BWwkGGS6hg-XnQfRwPbSqmvJ73wIXzG1saAtc7QAg.2y8tDadwlYp4LLFblg3s6qezJL1tVrKhkfjp1lm7bK0g.PNG/%EC%A7%88%EB%AC%B8%ED%8E%98%EC%9D%B4%EC%A7%80.png?type=w773";
+
+  const questions = [
+    {
+      q: "Q1.    🌙 퇴근길 창밖을 보며 듣고 싶은 노래는?",
+      a: [
+        { text: "A. 쓸쓸하고 깊은 생각에 잠기는 발라드 🍂", score: 1 },
+        { text: "B. 하루의 피로를 따뜻하게 감싸주는 위로 발라드 ☕", score: 2 },
+        { text: "C. 벅차오르고 기분 전환되는 화려한 발라드 ✨", score: 3 },
+        { text: "D. 옛 추억과 아련함에 젖어드는 클래식 발라드 📻", score: 4 }
+      ]
+    },
+    {
+      q: "Q2.    💔 이별을 맞이했을 때 나의 대처법은?",
+      a: [
+        { text: "A. 혼자 방에서 슬픔을 온전히 삼킨다 🌧️", score: 1 },
+        { text: "B. 상대의 행복을 빌며 마음을 담담히 정돈한다 🕊️", score: 2 },
+        { text: "C. 친구들을 만나 이야기를 털어놓는다 💬", score: 3 },
+        { text: "D. 시간이 해결해주길 기다리며 현실에 집중한다 ⏳", score: 4 }
+      ]
+    },
+    {
+      q: "Q3.    🎤 가장 끌리는 보컬 스타일은?",
+      a: [
+        { text: "A. 가슴을 울리는 폭발적인 고음 🔥", score: 1 },
+        { text: "B. 깊은 울림의 중저음과 소울풀한 음색 🎸", score: 2 },
+        { text: "C. 말하듯 편안하고 담백한 목소리 🍃", score: 3 },
+        { text: "D. 화려하고 맑고 청아한 미성 💎", score: 4 }
+      ]
+    },
+    {
+      q: "Q4.    🎻 나를 표현하는 사운드 분위기는?",
+      a: [
+        { text: "A. 웅장한 오케스트라와 스트링 사운드 🎼", score: 1 },
+        { text: "B. 잔잔한 피아노 선율 하나 🎹", score: 2 },
+        { text: "C. 따뜻하고 리드미컬한 어쿠스틱 포크/밴드 🪕", score: 3 },
+        { text: "D. 세련된 R&B 리듬과 듀엣 하모니 🎙️", score: 4 }
+      ]
+    },
+    {
+      q: "Q5.    💡 나에게 '사랑과 삶'이란?",
+      a: [
+        { text: "A. [희생] 아파도 끊어낼 수 없는 것 🩹", score: 1 },
+        { text: "B. [성장] 시련 속에서 나를 외치는 과정 🏔️", score: 2 },
+        { text: "C. [동반] 힘든 세상을 함께 견디는 존재 🤝", score: 3 },
+        { text: "D. [기억] 지나고 나면 아름다운 꿈같은 순간 🎞️", score: 4 }
+      ]
+    },
+    {
+      q: "Q6.    💌 지친 순간 가장 듣고 싶은 한마디는?",
+      a: [
+        { text: "A. \"포기하지 마, 내가 곁에 있을게.\"", score: 2 },
+        { text: "B. \"언젠가 다시 만나리, 지나간 시간도 의미가 있어.\"", score: 4 },
+        { text: "C. \"너의 아픔을 알아, 잠시 쉬어가도 돼.\"", score: 1 },
+        { text: "D. \"그대 내 작은 세상이 되어 다정하게 감싸주길.\"", score: 3 }
+      ]
+    }
+  ];
+
+  const results = {
+    "희생애절": {
+      title: "[희생·애절형]",
+      desc: "깊은 슬픔과 애절한 감성을 가슴 깊이 품고 있는 당신에게 어울리는 발라드입니다.",
+      songs: [
+        { title: "기도", artist: "정일영", link: "https://www.youtube.com/results?search_query=정일영+기도" },
+        { title: "그런 일은", artist: "박화요비", link: "https://www.youtube.com/results?search_query=박화요비+그런일은" },
+        { title: "안되나요...", artist: "휘성", link: "https://www.youtube.com/results?search_query=휘성+안되나요" },
+        { title: "고열", artist: "유다빈밴드", link: "https://www.youtube.com/results?search_query=유다빈밴드+고열" }
+      ]
+    },
+    "위로극복": {
+      title: "[위로·극복형]",
+      desc: "지친 마음을 따뜻하게 감싸주고 희망과 위로를 전달하는 발라드입니다.",
+      songs: [
+        { title: "세상이 그대를 속일지라도", artist: "김장훈", link: "https://www.youtube.com/results?search_query=김장훈+세상이그대를속일지라도" },
+        { title: "나를 외치다", artist: "마야", link: "https://www.youtube.com/results?search_query=마야+나를외치다" },
+        { title: "Good Bye Sadness, Hello Happiness", artist: "윤미래", link: "https://www.youtube.com/results?search_query=윤미래+Good+Bye+Sadness" },
+        { title: "그대 작은 나의 세상이 되어", artist: "카더가든", link: "https://www.youtube.com/results?search_query=카더가든+그대작은나의세상이되어" }
+      ]
+    },
+    "추억아련": {
+      title: "[추억·아련형]",
+      desc: "지나간 아름다운 시절과 아련한 추억을 조용히 회상하게 만드는 발라드입니다.",
+      songs: [
+        { title: "미소 속에 비친 그대", artist: "신승훈", link: "https://www.youtube.com/results?search_query=신승훈+미소속에비친그대" },
+        { title: "이별 여행", artist: "원미연", link: "https://www.youtube.com/results?search_query=원미연+이별여행" },
+        { title: "찬바람이 불면", artist: "김지연", link: "https://www.youtube.com/results?search_query=김지연+찬바람이불면" },
+        { title: "김성호의 회상", artist: "김성호", link: "https://www.youtube.com/results?search_query=김성호+김성호의회상" },
+        { title: "언젠가는", artist: "이상은", link: "https://www.youtube.com/results?search_query=이상은+언젠가는" }
+      ]
+    },
+    "담담성찰": {
+      title: "[담담·성찰형]",
+      desc: "과장되지 않은 담백함과 조용한 울림으로 삶을 되돌아보게 해주는 발라드입니다.",
+      songs: [
+        { title: "잊혀지는 것", artist: "동물원", link: "https://www.youtube.com/results?search_query=동물원+잊혀지는것" },
+        { title: "사랑 그 쓸쓸함에 대하여", artist: "양희은", link: "https://www.youtube.com/results?search_query=양희은+사랑그쓸쓸함에대하여" },
+        { title: "사랑일뿐야", artist: "김민우", link: "https://www.youtube.com/results?search_query=김민우+사랑일뿐야" },
+        { title: "난치병", artist: "하림", link: "https://www.youtube.com/results?search_query=하림+난치병" }
+      ]
+    },
+    "감성낭만": {
+      title: "[감성·낭만형]",
+      desc: "동화처럼 맑고 낭만적인 분위기와 섬세한 감수성이 돋보이는 발라드입니다.",
+      songs: [
+        { title: "마법의 성", artist: "더 클래식", link: "https://www.youtube.com/results?search_query=더클래식+마법의성" },
+        { title: "환상", artist: "박지윤", link: "https://www.youtube.com/results?search_query=박지윤+환상" },
+        { title: "그대의 의미", artist: "양수경", link: "https://www.youtube.com/results?search_query=양수경+그대의의미" },
+        { title: "사랑한 만큼", artist: "팀", link: "https://www.youtube.com/results?search_query=팀+사랑한만큼" }
+      ]
+    },
+    "우정하모니": {
+      title: "[우정·하모니형]",
+      desc: "소중한 사람들과의 조화로운 하모니와 동반자적인 따뜻함이 담긴 발라드입니다.",
+      songs: [
+        { title: "그대 내 친구여", artist: "패티김", link: "https://www.youtube.com/results?search_query=패티김+그대내친구여" },
+        { title: "청혼", artist: "노을", link: "https://www.youtube.com/results?search_query=노을+청혼" },
+        { title: "그땐 미처 알지 못했지", artist: "이적", link: "https://www.youtube.com/results?search_query=이적+그땐미처알지못했지" },
+        { title: "Think About' Chu", artist: "아소토 유니온", link: "https://www.youtube.com/results?search_query=아소토유니온+Think+About+Chu" },
+        { title: "Over the rainbow", artist: "자우림", link: "https://www.youtube.com/results?search_query=자우림+Over+the+rainbow" }
+      ]
+    }
+  };
+
+  let currentStep = 0;
+  let totalScore = 0;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('mainContainer').style.backgroundImage = `url('${bgCover}')`;
+  });
+
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+
+    const container = document.getElementById('mainContainer');
+
+    if (pageId === 'cover-page') {
+      container.style.backgroundImage = `url('${bgCover}')`;
+    } else {
+      container.style.backgroundImage = `url('${bgSub}')`;
+    }
+  }
+
+  function startTest() {
+    currentStep = 0;
+    totalScore = 0;
+    showPage('question-page');
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const qData = questions[currentStep];
+    document.getElementById('questionTitle').innerText = qData.q;
+    
+    const progressPercent = ((currentStep + 1) / questions.length) * 100;
+    document.getElementById('progressFill').style.width = `${progressPercent}%`;
+
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+
+    qData.a.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'option-btn';
+      btn.innerText = opt.text;
+      btn.onclick = () => selectAnswer(opt.score);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(score) {
+    totalScore += score;
+    currentStep++;
+
+    if (currentStep < questions.length) {
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    let resultKey = "추억아련";
+
+    if (totalScore <= 8) {
+      resultKey = "희생애절";
+    } else if (totalScore <= 11) {
+      resultKey = "담담성찰";
+    } else if (totalScore <= 15) {
+      resultKey = "위로극복";
+    } else if (totalScore <= 18) {
+      resultKey = "감성낭만";
+    } else if (totalScore <= 21) {
+      resultKey = "우정하모니";
+    } else {
+      resultKey = "추억아련";
+    }
+
+    const data = results[resultKey];
+
+    document.getElementById('resultTypeTitle').innerText = data.title;
+    document.getElementById('resultDesc').innerText = data.desc;
+
+    const songListContainer = document.getElementById('songList');
+    songListContainer.innerHTML = '';
+
+    data.songs.forEach(song => {
+      const item = document.createElement('div');
+      item.className = 'song-item';
+      item.innerHTML = `
+        <div class="song-info">
+          <div class="song-title">${song.title}</div>
+          <div class="song-artist">${song.artist}</div>
+        </div>
+        <a href="${song.link}" target="_blank" class="listen-btn">
+          ▶ 바로듣기
+        </a>
+      `;
+      songListContainer.appendChild(item);
+    });
+
+    showPage('result-page');
+  }
+
+  function restartTest() {
+    startTest();
+  }
+
+  function copyURL() {
+    const currentURL = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(currentURL).then(() => {
+        alert('링크가 클립보드에 복사되었습니다!');
+      }).catch(() => fallbackCopy(currentURL));
+    } else {
+      fallbackCopy(currentURL);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const tempInput = document.createElement('input');
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+      document.execCommand('copy');
+      alert('링크가 클립보드에 복사되었습니다!');
+    } catch (err) {
+      alert('주소 복사에 실패했습니다.');
+    }
+    document.body.removeChild(tempInput);
+  }
+</script>
+
+</body>
+</html>
